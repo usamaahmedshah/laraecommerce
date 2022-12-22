@@ -3,17 +3,21 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Brand;
+use App\Models\Product;
 use App\Models\Category;
 use Illuminate\Support\Str;
+use App\Models\ProductImage;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\File;
 use App\Http\Requests\ProductFormRequest;
 
 class ProductController extends Controller
 {
     public function index()
     {
-        return view('admin.products.index');
+        $products = Product::all();
+        return view('admin.products.index',compact('products'));
     }
 
     public function create()
@@ -53,7 +57,7 @@ class ProductController extends Controller
                 $filename=time().$i++.'.'.$extention;
                 $imageFile->move($uploadPath,$filename);
                 $finalImagePathName=$uploadPath.$filename;
-                $product->ProductImages()->create([
+                $product->ProductImage()->create([
                     'product_id'=>$product->id,
                     'image'=>$finalImagePathName,
                 ]); 
@@ -63,4 +67,38 @@ class ProductController extends Controller
 
         return redirect('/admin/products')->with('message','Product Added Successfully');
     }
+
+    public function edit(int $product_id)
+    {
+        $categories = Category::all();
+        $brands = Brand::all();
+        $product = Product::findorFail($product_id);
+        return view('admin.products.edit',compact('categories','brands','product'));
+    }
+
+    
+    public function destroyImage(int $product_image_id)
+    {
+        $productImage = ProductImage::findorFail($product_image_id);
+        if(File::exists($productImage->image)){
+            File::delete($productImage->image);
+        }
+        $productImage->delete();
+        return redirect()->back()->with('message','Product Image Deleted');
+    }
+
+    public function destroy(int $product_id)
+    {
+        $product = Product::findorFail($product_id);
+        if($product->productImage()){
+            foreach($product->productImage() as $image){
+                if(File::exists($image->image)){
+                    File::delete($image->image);
+                }
+            }
+        }
+        $product->delete();
+        return redirect()->back()->with('message', 'Product Deleted with all its image');
+    }
+
 }
