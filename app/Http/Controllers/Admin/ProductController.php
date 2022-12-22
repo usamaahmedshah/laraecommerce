@@ -51,12 +51,13 @@ class ProductController extends Controller
         if($request->hasFile('image')){
             $uploadPath='uploads/products/';
 
-            $i = 1;
+            
             foreach($request->file('image') as $imageFile){
                 $extention=$imageFile->getClientOriginalExtension();
-                $filename=time().$i++.'.'.$extention;
+                $filename=time().'.'.$extention;
                 $imageFile->move($uploadPath,$filename);
                 $finalImagePathName=$uploadPath.$filename;
+                
                 $product->ProductImage()->create([
                     'product_id'=>$product->id,
                     'image'=>$finalImagePathName,
@@ -84,7 +85,7 @@ class ProductController extends Controller
             File::delete($productImage->image);
         }
         $productImage->delete();
-        return redirect()->back()->with('message','Product Image Deleted');
+        return redirect('admin/products')->with('message','Product Image Deleted');
     }
 
     public function destroy(int $product_id)
