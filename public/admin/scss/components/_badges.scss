@@ -12,8 +12,8 @@
 }
 
 /*Badge outlined variations*/
-@each $color, $value in $theme-colors {
-  .badge-outline-#{$color} {
+@each , $value in $theme-colors {
+  .badge-outline-#{} {
     @include badge-outline-variations($value);
   }
 }
